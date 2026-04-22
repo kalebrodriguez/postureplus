@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Posture+ | AI Posture Coach</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0c10; --surface: #141418; --card: #1c1c22;
+    --border: #2a2a35; --border2: #323240;
+    --blue: #4f8ef7; --green: #22c55e; --amber: #f59e0b; --red: #ef4444;
+    --text: #e8eaf0; --muted: #64748b; --muted2: #4a5568;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 56px;
+    background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: var(--text); }
+  .logo span { color: var(--blue); }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .status-badge {
+    display: flex; align-items: center; gap: 6px; padding: 5px 12px;
+    border-radius: 6px; font-size: 13px; font-weight: 500;
+    background: var(--card); border: 1px solid var(--border); color: var(--muted); transition: all 0.3s;
+  }
+  .status-badge.good  { color: var(--green); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+  .status-badge.fair  { color: var(--amber); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+  .status-badge.poor  { color: var(--red);   border-color: rgba(239,68,68,0.3);  background: rgba(239,68,68,0.08); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .main { flex: 1; display: grid; grid-template-columns: 1fr 320px; min-height: 0; }
+  .camera-section { display: flex; flex-direction: column; padding: 20px; gap: 16px; border-right: 1px solid var(--border); }
+  .camera-wrap { position: relative; flex: 1; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); min-height: 300px; }
+  .camera-wrap canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #start-screen {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    background: #0a0a0e; z-index: 10;
+  }
+  #start-screen h2 { font-size: 20px; font-weight: 600; color: var(--text); }
+  #start-screen p { font-size: 14px; color: var(--muted); text-align: center; max-width: 280px; }
+  #start-btn {
+    padding: 10px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;
+    background: var(--blue); color: #fff; border: none; cursor: pointer; transition: opacity 0.2s;
+  }
+  #start-btn:hover { opacity: 0.88; }
+  #error-msg { color: var(--red); font-size: 13px; display: none; }
+  .cam-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 18px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.75));
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .live-pill { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .cam-score { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); }
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .panel { display: flex; flex-direction: column; overflow-y: auto; background: var(--surface); }
+  .panel-section { padding: 18px; border-bottom: 1px solid var(--border); }
+  .section-title { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 14px; }
+  .score-block { display: flex; align-items: center; gap: 16px; }
+  .score-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+  .score-ring-wrap svg { transform: rotate(-90deg); }
+  .score-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: var(--text); }
+  .score-label { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .score-label.good { color: var(--green); }
+  .score-label.fair { color: var(--amber); }
+  .score-label.poor { color: var(--red); }
+  .score-label.none { color: var(--muted); }
+  .score-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .body-list { display: flex; flex-direction: column; gap: 8px; }
+  .body-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); transition: all 0.3s;
+  }
+  .body-row.ok  { border-color: rgba(34,197,94,0.25); background: rgba(34,197,94,0.05); }
+  .body-row.bad { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); }
+  .body-left { display: flex; align-items: center; gap: 8px; }
+  .body-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .body-row.ok  .body-icon { background: rgba(34,197,94,0.15); }
+  .body-row.bad .body-icon { background: rgba(239,68,68,0.15); }
+  .body-name { font-size: 13px; font-weight: 500; }
+  .body-status { font-size: 12px; color: var(--muted); }
+  .body-row.ok  .body-status { color: var(--green); }
+  .body-row.bad .body-status { color: var(--red); }
+  .good-state { display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 6px; }
+  .good-check { font-size: 28px; color: var(--green); }
+  .good-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .good-sub { font-size: 12px; color: var(--muted); text-align: center; }
+  .fix-section { display: none; }
+  .fix-section.visible { display: block; }
+  .fix-list { display: flex; flex-direction: column; gap: 10px; }
+  .fix-card { padding: 12px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); }
+  .fix-issue { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--red); margin-bottom: 4px; }
+  .fix-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .fix-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  #alert-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index: 100; white-space: nowrap;
+  }
+  #alert-toast.show { transform: translateX(-50%) translateY(0); }
+  video#input-video { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Posture<span>+</span>
+  </div>
+  <div>
+    <div class="status-badge" id="status-badge">
+      <div class="badge-dot"></div>
+      <span id="badge-text">Initializing</span>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="camera-section">
+    <div class="camera-wrap">
+      <div id="start-screen">
+        <h2>AI Posture Coach</h2>
+        <p>Click below to enable your webcam and start real-time posture analysis.</p>
+        <button id="start-btn" onclick="startCamera()">Enable Camera</button>
+        <span id="error-msg"></span>
+      </div>
+      <canvas id="output-canvas"></canvas>
+      <div class="cam-bar">
+        <div class="live-pill"><div class="live-dot"></div>Live</div>
+        <div class="cam-score" id="cam-score"></div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">Session</div>
+        <div class="stat-value" id="stat-time">0:00</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Good Posture</div>
+        <div class="stat-value" id="stat-good">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Alerts</div>
+        <div class="stat-value" id="stat-alerts">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-section">
+      <div class="section-title">Posture Score</div>
+      <div class="score-block">
+        <div class="score-ring-wrap">
+          <svg viewBox="0 0 80 80" width="80" height="80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="#2a2a35" stroke-width="7"/>
+            <circle id="ring-fill" cx="40" cy="40" r="32" fill="none"
+              stroke="var(--green)" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="201.06" stroke-dashoffset="201.06" style="transition:stroke-dashoffset 0.4s,stroke 0.4s"/>
+          </svg>
+          <div class="score-num" id="ring-num">—</div>
+        </div>
+        <div class="score-info">
+          <div class="score-label none" id="score-label">Waiting</div>
+          <div class="score-sub" id="score-sub">Enable camera to begin.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Body Breakdown</div>
+      <div class="body-list">
+        <div class="body-row" id="part-spine">
+          <div class="body-left"><div class="body-icon">↕</div><div class="body-name">Spine</div></div>
+          <div class="body-status" id="status-spine">—</div>
+        </div>
+        <div class="body-row" id="part-shoulders">
+          <div class="body-left"><div class="body-icon">↔</div><div class="body-name">Shoulders</div></div>
+          <div class="body-status" id="status-shoulders">—</div>
+        </div>
+        <div class="body-row" id="part-head">
+          <div class="body-left"><div class="body-icon">○</div><div class="body-name">Head Position</div></div>
+          <div class="body-status" id="status-head">—</div>
+        </div>
+        <div class="body-row" id="part-neck">
+          <div class="body-left"><div class="body-icon">↗</div><div class="body-name">Neck Tilt</div></div>
+          <div class="body-status" id="status-neck">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">Recommended Exercises</div>
+      <div class="good-state" id="good-state" style="display:flex">
+        <div class="good-check">✓</div>
+        <div class="good-title">Looking good</div>
+        <div class="good-sub">Enable camera to start analysis.</div>
+      </div>
+      <div class="fix-section" id="fix-section">
+        <div class="fix-list" id="fix-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="alert-toast">⚠ Posture alert</div>
+<video id="input-video" playsinline></video>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+<script>
+const CIRC = 2 * Math.PI * 32;
+const EXERCISES = {
+  "Slouching":             { name:"Chest Opener",      desc:"Stand, clasp hands behind back, squeeze shoulder blades and lift chest. Hold 15s. Repeat 3×." },
+  "Uneven shoulders":      { name:"Shoulder Rolls",    desc:"Roll both shoulders backward in slow circles 10×, then shrug to ears, hold 3s, release. Repeat 5×." },
+  "Head drooping forward": { name:"Chin Tuck",         desc:"Pull chin straight back (double chin). Hold 5s, release. Do 10 reps — great for screen workers." },
+  "Head tilting":          { name:"Neck Side Stretch",  desc:"Tilt right ear toward right shoulder, hold 20s. Switch sides. Keep shoulders relaxed." }
+};
+const PARTS = {
+  spine:     { issue:"Slouching",             ok:"Aligned",       bad:"Slouching" },
+  shoulders: { issue:"Uneven shoulders",      ok:"Level",         bad:"Uneven" },
+  head:      { issue:"Head drooping forward", ok:"Good position", bad:"Drooping forward" },
+  neck:      { issue:"Head tilting",          ok:"Centered",      bad:"Tilting" }
+};
+
+let sessionStart = Date.now(), lastAlertAt = 0, alertTimeout = null;
+let alertCount = 0, totalChecks = 0, goodChecks = 0;
+let cameraStarted = false;
+
+function analyzePosture(lm) {
+  const issues = [];
+  const nose=lm[0], lEar=lm[7], rEar=lm[8];
+  const lS=lm[11], rS=lm[12], lH=lm[23], rH=lm[24];
+  const midS={x:(lS.x+rS.x)/2, y:(lS.y+rS.y)/2};
+  const midH={x:(lH.x+rH.x)/2, y:(lH.y+rH.y)/2};
+  const midE={x:(lEar.x+rEar.x)/2, y:(lEar.y+rEar.y)/2};
+  const sw=Math.max(Math.abs(lS.x-rS.x),0.001);
+  const th=Math.max(Math.abs(midS.y-midH.y),0.001);
+  const spineAngle=Math.atan2(midS.x-midH.x, midH.y-midS.y)*180/Math.PI;
+  if(Math.abs(spineAngle)>12) issues.push("Slouching");
+  if(Math.abs(lS.y-rS.y)/sw>0.12) issues.push("Uneven shoulders");
+  if(Math.abs(lEar.y-rEar.y)/sw>0.12) issues.push("Head tilting");
+  const neckDroop=(midE.y-midS.y)/th;
+  if(neckDroop>-0.22) issues.push("Head drooping forward");
+  const score=Math.max(0,100-issues.length*22);
+  const status=issues.length===0?"Good":issues.length===1?"Fair":"Poor";
+  return {issues, score, status};
+}
+
+function scoreColor(s) {
+  return s>=78?"var(--green)":s>=50?"var(--amber)":"var(--red)";
+}
+
+function updateUI(data, detected) {
+  totalChecks++;
+  const {score, status, issues}=data;
+  const fill=document.getElementById("ring-fill");
+  fill.style.strokeDashoffset=detected?CIRC-(score/100)*CIRC:CIRC;
+  fill.style.stroke=detected?scoreColor(score):"var(--border2)";
+  document.getElementById("ring-num").textContent=detected?score:"—";
+  const lbl=document.getElementById("score-label");
+  const sub=document.getElementById("score-sub");
+  if(!detected){
+    lbl.textContent="Waiting"; lbl.className="score-label none";
+    sub.textContent="Position yourself in the camera frame.";
+  } else {
+    lbl.textContent=status; lbl.className="score-label "+status.toLowerCase();
+    sub.textContent=issues.length===0?"Great posture — keep it up!":`${issues.length} issue${issues.length>1?"s":""} detected.`;
+  }
+  const badge=document.getElementById("status-badge");
+  const badgeText=document.getElementById("badge-text");
+  if(!detected){ badge.className="status-badge"; badgeText.textContent="No person"; }
+  else { badge.className="status-badge "+status.toLowerCase(); badgeText.textContent=status+" posture"; }
+  document.getElementById("cam-score").textContent=detected?`Score ${score}/100`:"";
+  if(detected && status==="Good") goodChecks++;
+  const pct=totalChecks>0?Math.round(goodChecks/totalChecks*100):0;
+  document.getElementById("stat-good").textContent=detected?pct+"%":"—";
+  document.getElementById("stat-alerts").textContent=alertCount;
+  for(const [key,cfg] of Object.entries(PARTS)){
+    const hasIssue=issues.includes(cfg.issue);
+    const row=document.getElementById("part-"+key);
+    const stat=document.getElementById("status-"+key);
+    row.className="body-row "+(!detected?"":hasIssue?"bad":"ok");
+    stat.textContent=!detected?"—":hasIssue?cfg.bad:cfg.ok;
+  }
+  const goodState=document.getElementById("good-state");
+  const fixSection=document.getElementById("fix-section");
+  const fixList=document.getElementById("fix-list");
+  if(!detected||issues.length===0){
+    goodState.style.display="flex"; fixSection.classList.remove("visible");
+    if(!detected){ document.querySelector(".good-title").textContent="Looking good"; document.querySelector(".good-sub").textContent="No corrections needed right now."; }
+  } else {
+    goodState.style.display="none"; fixSection.classList.add("visible");
+    fixList.innerHTML=issues.map(iss=>{
+      const ex=EXERCISES[iss]; if(!ex) return "";
+      return `<div class="fix-card"><div class="fix-issue">${iss}</div><div class="fix-name">${ex.name}</div><div class="fix-desc">${ex.desc}</div></div>`;
+    }).join("");
+  }
+  if(detected && issues.length>0 && Date.now()-lastAlertAt>9000){
+    lastAlertAt=Date.now(); alertCount++;
+    document.getElementById("stat-alerts").textContent=alertCount;
+    const toast=document.getElementById("alert-toast");
+    toast.textContent=`⚠  ${issues[0]} — try the exercise below`;
+    toast.classList.add("show");
+    clearTimeout(alertTimeout);
+    alertTimeout=setTimeout(()=>toast.classList.remove("show"), 5000);
+  }
+}
+
+setInterval(()=>{
+  const e=Math.floor((Date.now()-sessionStart)/1000);
+  document.getElementById("stat-time").textContent=`${Math.floor(e/60)}:${String(e%60).padStart(2,"0")}`;
+}, 1000);
+
+function startCamera() {
+  if(cameraStarted) return;
+  const btn = document.getElementById("start-btn");
+  const errMsg = document.getElementById("error-msg");
+  btn.textContent = "Starting...";
+  btn.disabled = true;
+
+  const videoEl = document.getElementById("input-video");
+  const canvasEl = document.getElementById("output-canvas");
+  const ctx = canvasEl.getContext("2d");
+
+  const pose = new Pose({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}` });
+  pose.setOptions({ modelComplexity:1, smoothLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
+
+  pose.onResults(results => {
+    canvasEl.width = videoEl.videoWidth || 640;
+    canvasEl.height = videoEl.videoHeight || 480;
+    ctx.save();
+    ctx.clearRect(0,0,canvasEl.width,canvasEl.height);
+    ctx.drawImage(results.image, 0, 0, canvasEl.width, canvasEl.height);
+    if(results.poseLandmarks){
+      const analysis=analyzePosture(results.poseLandmarks);
+      const good=analysis.status==="Good";
+      const lineColor=good?"rgba(34,197,94,0.75)":analysis.status==="Fair"?"rgba(245,158,11,0.75)":"rgba(239,68,68,0.75)";
+      drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color:lineColor, lineWidth:2.5});
+      drawLandmarks(ctx, results.poseLandmarks, {color:"rgba(255,255,255,0.85)", lineWidth:1, radius:3});
+      updateUI(analysis, true);
+    } else {
+      updateUI({issues:[], score:0, status:"None"}, false);
+    }
+    ctx.restore();
+  });
+
+  navigator.mediaDevices.getUserMedia({ video: { width:1280, height:720 } })
+    .then(stream => {
+      videoEl.srcObject = stream;
+      videoEl.play();
+      cameraStarted = true;
+      document.getElementById("start-screen").style.display = "none";
+      const camera = new Camera(videoEl, {
+        onFrame: async () => { await pose.send({ image: videoEl }); },
+        width: 1280, height: 720
+      });
+      camera.start();
+    })
+    .catch(err => {
+      errMsg.style.display = "block";
+      errMsg.textContent = "Camera access denied. Please allow camera in your browser settings.";
+      btn.textContent = "Try Again";
+      btn.disabled = false;
+    });
+}
+</script>
+</body>
+</html>
