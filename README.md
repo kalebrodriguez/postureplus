@@ -48,10 +48,11 @@ Camera access needs a secure context (`localhost` or HTTPS).
 
 Pushes to `main` run lint, tests, and build, then deploy `dist/`.
 
-First-time setup:
+The deploy workflow tries to enable Pages automatically. If the site is still
+missing after a green deploy, do this once:
 
 1. **Settings → Pages**
 2. Set **Source** to **GitHub Actions**
-3. Merge to `main` (or run the workflow manually)
+3. Re-run the **Deploy to GitHub Pages** workflow
 
 The app is built with `base: /postureplus/` so assets resolve correctly under the repo Pages URL.
