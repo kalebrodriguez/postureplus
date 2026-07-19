@@ -28,11 +28,43 @@ export function LandingPage() {
             <Link className="btn btn--primary" to="/coach">
               Open coach
             </Link>
-            <Link className="btn btn--ghost" to="/progress">
-              View progress
-            </Link>
+            <a className="btn btn--ghost" href="#why">
+              Why it matters
+            </a>
           </div>
         </div>
+      </section>
+
+      <section className="landing-why" id="why" aria-labelledby="why-title">
+        <p className="landing-why__eyebrow">Why posture matters</p>
+        <h2 className="landing-why__title" id="why-title">
+          Small slumps add up fast.
+        </h2>
+        <p className="landing-why__lede">
+          Hours at a desk quietly stack tension in your neck, shoulders, and lower back.
+          Catching the slip early is easier than undoing a week of it.
+        </p>
+
+        <ul className="landing-why__points">
+          <li>
+            <strong>Fewer ache days</strong>
+            <span>
+              Forward head posture and rounded shoulders are common desk strain patterns.
+            </span>
+          </li>
+          <li>
+            <strong>Better focus</strong>
+            <span>
+              Discomfort steals attention. Neutral alignment keeps you in the work longer.
+            </span>
+          </li>
+          <li>
+            <strong>A cue you can trust</strong>
+            <span>
+              Posture+ waits for sustained issues, then nudges you with a specific fix.
+            </span>
+          </li>
+        </ul>
       </section>
 
       <section className="landing-how" id="difference" aria-labelledby="diff-title">
@@ -41,8 +73,8 @@ export function LandingPage() {
           A personal posture-improvement system
         </h2>
         <p className="landing-how__lede">
-          Built to answer three questions: what am I doing wrong, how do I correct it,
-          and am I improving over time — privately, in your browser.
+          Built to answer three questions: what am I doing wrong, how do I correct it, and am
+          I improving over time — privately, in your browser.
         </p>
 
         <ol className="landing-how__steps">
@@ -95,7 +127,11 @@ export function LandingPage() {
         <span className="landing-footer__brand">
           Posture<span>+</span>
         </span>
-        <span className="landing-footer__note">Private by design · Runs locally · No uploads</span>
+        <div className="landing-footer__links">
+          <Link to="/privacy">Privacy & FAQ</Link>
+          <Link to="/progress">Progress</Link>
+          <span>Private by design · Runs locally · No uploads</span>
+        </div>
       </footer>
     </div>
   )

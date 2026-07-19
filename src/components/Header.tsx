@@ -21,6 +21,9 @@ export function Header({ variant = 'coach', badgeLabel, badgeTone }: HeaderProps
         <Link to="/progress" className="app-header__home">
           Progress
         </Link>
+        <Link to="/privacy" className="app-header__home">
+          Privacy
+        </Link>
         <div
           className={`status-badge${badgeTone === 'idle' ? '' : ` ${badgeTone}`}`}
           role="status"

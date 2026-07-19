@@ -15,6 +15,7 @@ Personal posture-improvement system built with **React**, **TypeScript**, **Vite
 - Local progress dashboard (weekly insights, streaks)
 - Smart break / fatigue hints by session goal
 - Guided exercise mini-sessions
+- Privacy & FAQ page
 - Private by design — video never leaves the device
 
 ## Routes
@@ -24,6 +25,7 @@ Personal posture-improvement system built with **React**, **TypeScript**, **Vite
 | `/` | Landing |
 | `/coach` | Calibration + live coach |
 | `/progress` | Local progress history |
+| `/privacy` | Privacy principles & FAQ |
 
 ## Scripts
 
