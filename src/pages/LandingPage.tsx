@@ -26,11 +26,38 @@ export function LandingPage() {
             <Link className="btn btn--primary" to="/coach">
               Open coach
             </Link>
-            <a className="btn btn--ghost" href="#how">
-              How it works
+            <a className="btn btn--ghost" href="#why">
+              Why it matters
             </a>
           </div>
         </div>
+      </section>
+
+      <section className="landing-why" id="why" aria-labelledby="why-title">
+        <p className="landing-why__eyebrow">Why posture matters</p>
+        <h2 className="landing-why__title" id="why-title">
+          Small slumps add up fast.
+        </h2>
+        <p className="landing-why__lede">
+          Hours at a desk quietly stack tension in your neck, shoulders, and
+          lower back. Catching the slip early is easier than undoing a week of
+          it.
+        </p>
+
+        <ul className="landing-why__points">
+          <li>
+            <strong>Fewer ache days</strong>
+            <span>Forward head posture and rounded shoulders are common desk strain patterns.</span>
+          </li>
+          <li>
+            <strong>Better focus</strong>
+            <span>Discomfort steals attention. Neutral alignment keeps you in the work longer.</span>
+          </li>
+          <li>
+            <strong>A cue you can trust</strong>
+            <span>Posture+ watches live and nudges you when form drops — not after the fact.</span>
+          </li>
+        </ul>
       </section>
 
       <section className="landing-how" id="how" aria-labelledby="how-title">
@@ -67,7 +94,10 @@ export function LandingPage() {
         <span className="landing-footer__brand">
           Posture<span>+</span>
         </span>
-        <span className="landing-footer__note">Private by design · Runs locally</span>
+        <div className="landing-footer__links">
+          <Link to="/privacy">Privacy & FAQ</Link>
+          <span>Private by design · Runs locally</span>
+        </div>
       </footer>
     </div>
   )

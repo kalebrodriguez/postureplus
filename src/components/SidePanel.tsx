@@ -1,4 +1,9 @@
 import './SidePanel.css'
+import {
+  formatHistoryDuration,
+  formatHistoryWhen,
+  type SessionHistoryEntry,
+} from '../lib/sessionHistory'
 import { SCORE_RING_CIRCUMFERENCE, scoreColor } from '../lib/posture'
 import type {
   BodyPartState,
@@ -12,6 +17,8 @@ interface SidePanelProps {
   isLive: boolean
   bodyParts: BodyPartState[]
   exercises: ExerciseRecommendation[]
+  history: SessionHistoryEntry[]
+  onClearHistory: () => void
 }
 
 export function SidePanel({
@@ -20,6 +27,8 @@ export function SidePanel({
   isLive,
   bodyParts,
   exercises,
+  history,
+  onClearHistory,
 }: SidePanelProps) {
   const detected = isLive && personDetected && analysis != null
   const score = detected ? analysis.score : null
@@ -114,6 +123,40 @@ export function SidePanel({
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      <div className="panel-section">
+        <div className="section-title-row">
+          <div className="section-title">Recent sessions</div>
+          {history.length > 0 ? (
+            <button type="button" className="history-clear" onClick={onClearHistory}>
+              Clear
+            </button>
+          ) : null}
+        </div>
+        {history.length === 0 ? (
+          <p className="history-empty">
+            Sessions longer than 15s are saved on this device when you leave the coach.
+          </p>
+        ) : (
+          <ul className="history-list">
+            {history.map((entry) => (
+              <li key={entry.id} className="history-item">
+                <div className="history-item__top">
+                  <span>{formatHistoryWhen(entry.endedAt)}</span>
+                  <span>{formatHistoryDuration(entry.durationMs)}</span>
+                </div>
+                <div className="history-item__meta">
+                  <span>{entry.goodPercent}% good</span>
+                  <span>{entry.alertCount} alerts</span>
+                  <span>
+                    {entry.averageScore == null ? '— avg' : `${entry.averageScore} avg`}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </aside>

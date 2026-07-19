@@ -41,6 +41,8 @@ export function CoachPage() {
           isLive={isLive}
           bodyParts={session.bodyParts}
           exercises={session.exercises}
+          history={session.history}
+          onClearHistory={session.clearHistory}
         />
       </main>
 

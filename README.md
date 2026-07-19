@@ -38,6 +38,7 @@ src/
 | --- | --- |
 | `/` | Marketing landing |
 | `/coach` | Live posture coach |
+| `/privacy` | Privacy principles & FAQ |
 
 ## Scripts
 
