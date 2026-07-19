@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: 'Where is session history stored?',
-    a: 'Recent session summaries (duration, good-posture %, alerts) stay in your browser’s local storage only. Clear them anytime from the coach panel.',
+    a: 'Recent session summaries stay in your browser’s local storage only. Clear them anytime from the Progress page.',
   },
   {
     q: 'What permissions does Posture+ need?',

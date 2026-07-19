@@ -270,3 +270,16 @@
   color: var(--muted);
   line-height: 1.5;
 }
+
+.fix-start {
+  margin-top: 10px;
+  background: rgba(79, 142, 247, 0.12);
+  border: 1px solid rgba(79, 142, 247, 0.35);
+  color: #dbe7ff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}

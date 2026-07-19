@@ -6,8 +6,8 @@ interface SiteNavProps {
 }
 
 export function SiteNav({ variant = 'landing' }: SiteNavProps) {
-  const howHref = variant === 'landing' ? '#how' : '/#how'
   const whyHref = variant === 'landing' ? '#why' : '/#why'
+  const diffHref = variant === 'landing' ? '#difference' : '/#difference'
 
   return (
     <header className={`site-nav site-nav--${variant}`}>
@@ -17,7 +17,8 @@ export function SiteNav({ variant = 'landing' }: SiteNavProps) {
       </Link>
       <nav className="site-nav__links" aria-label="Primary">
         <a href={whyHref}>Why</a>
-        <a href={howHref}>How it works</a>
+        <a href={diffHref}>Why Posture+</a>
+        <NavLink to="/progress">Progress</NavLink>
         <NavLink to="/privacy">Privacy</NavLink>
         <NavLink to="/coach" className="site-nav__cta">
           Open coach
