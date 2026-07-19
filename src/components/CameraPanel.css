@@ -1,0 +1,174 @@
+.camera-section {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 16px;
+  border-right: 1px solid var(--border);
+}
+
+.camera-wrap {
+  position: relative;
+  flex: 1;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  min-height: 300px;
+}
+
+.output-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.input-video {
+  display: none;
+}
+
+.start-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #0a0a0e;
+  z-index: 10;
+  padding: 24px;
+}
+
+.start-screen h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.start-screen p {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 280px;
+}
+
+.start-btn {
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.start-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.start-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error-msg {
+  color: var(--red);
+  font-size: 13px;
+  text-align: center;
+  max-width: 320px;
+}
+
+.cam-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 18px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.live-dot.on {
+  background: var(--green);
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.cam-score {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+@media (max-width: 900px) {
+  .camera-section {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .camera-wrap {
+    min-height: 240px;
+    aspect-ratio: 4 / 3;
+  }
+}

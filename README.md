@@ -1,51 +1,57 @@
 # Posture+
 
-Real-time AI posture coach that uses your webcam and [MediaPipe Pose](https://developers.google.com/mediapipe/solutions/vision/pose_landmarker) to score posture, flag issues, and suggest simple exercises.
+Real-time AI posture coach built with **React**, **TypeScript**, **Vite**, and **MediaPipe Pose**.
 
 **Live site:** [https://kalebrodriguez.github.io/postureplus/](https://kalebrodriguez.github.io/postureplus/)
 
 ## Features
 
-- Webcam pose tracking with skeleton overlay
-- Live posture score (spine, shoulders, head, neck)
-- Alerts when form slips
-- Recommended stretches for each detected issue
+- Webcam pose tracking with live skeleton overlay
+- Posture score across spine, shoulders, head, and neck
+- Alerts when form slips, plus recommended stretches
+- Runs fully in the browser — video never leaves your device
+
+## Stack
+
+| Layer | Tech |
+| --- | --- |
+| UI | React 19 + TypeScript |
+| Bundler | Vite 8 |
+| Pose ML | `@mediapipe/tasks-vision` |
+| Hosting | GitHub Pages (Actions) |
 
 ## Project structure
 
 ```
-├── index.html          # App entry (served by GitHub Pages)
-├── css/styles.css      # UI styles
-├── js/app.js           # Posture analysis + camera logic
-└── .github/workflows/  # Pages deploy workflow
+src/
+  components/     # Header, camera panel, side panel, toast
+  hooks/          # Camera + session state
+  lib/            # Posture math + MediaPipe engine
+  styles/         # Global design tokens
+  types/          # Shared TypeScript types
 ```
 
-## Run locally
-
-Camera access needs a secure context (HTTPS or `localhost`).
+## Scripts
 
 ```bash
-# Python
-python3 -m http.server 8080
-
-# Node
-npx --yes serve .
+npm install
+npm run dev       # local dev server (http://localhost:5173)
+npm run build     # production build → dist/
+npm run preview   # preview production build
+npm test          # unit tests
+npm run lint      # oxlint
 ```
 
-Then open [http://localhost:8080](http://localhost:8080), click **Enable Camera**, and allow webcam access.
+Camera access needs a secure context (`localhost` or HTTPS).
 
 ## Deploy on GitHub Pages
 
-This repo deploys automatically via GitHub Actions on every push to `main`.
+Pushes to `main` run lint, tests, and build, then deploy `dist/`.
 
-To enable Pages the first time:
+First-time setup:
 
-1. Open **Settings → Pages**
-2. Under **Build and deployment**, set **Source** to **GitHub Actions**
-3. Merge this project to `main` (or re-run the workflow)
+1. **Settings → Pages**
+2. Set **Source** to **GitHub Actions**
+3. Merge to `main` (or run the workflow manually)
 
-The site will be available at `https://<username>.github.io/postureplus/`.
-
-## Privacy
-
-All pose analysis runs in your browser. Video never leaves your device.
+The app is built with `base: /postureplus/` so assets resolve correctly under the repo Pages URL.
