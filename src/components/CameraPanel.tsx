@@ -51,8 +51,8 @@ export function CameraPanel({
             </div>
             <h2>Set up your coach</h2>
             <p>
-              Place the camera near eye level. We’ll analyze spine, shoulders, head, and neck —
-              all on this device.
+              Place the camera near eye level. A head-and-shoulders frame is enough — we’ll
+              analyze head, neck, shoulders, and upper posture on this device.
             </p>
             <p className="privacy-note">Your video never leaves this device.</p>
             <button

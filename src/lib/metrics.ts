@@ -23,14 +23,21 @@ export function computeMetrics(landmarks: NormalizedLandmark[]): PostureMetrics 
   const rH = landmarks[24]
 
   const midShoulder = { x: (lS.x + rS.x) / 2, y: (lS.y + rS.y) / 2 }
-  const midHip = { x: (lH.x + rH.x) / 2, y: (lH.y + rH.y) / 2 }
   const midEar = { x: (lEar.x + rEar.x) / 2, y: (lEar.y + rEar.y) / 2 }
-
   const shoulderWidth = Math.max(Math.abs(lS.x - rS.x), 0.001)
-  const torsoHeight = Math.max(Math.abs(midShoulder.y - midHip.y), 0.001)
 
-  const spineAngleDeg =
-    (Math.atan2(midShoulder.x - midHip.x, midHip.y - midShoulder.y) * 180) / Math.PI
+  // Desk webcams often crop the hips — fall back to an upper-body torso estimate.
+  const hipVisibility = Math.min(lH?.visibility ?? 0, rH?.visibility ?? 0)
+  const hipsReliable = hipVisibility > 0.4
+  const midHip = hipsReliable
+    ? { x: (lH.x + rH.x) / 2, y: (lH.y + rH.y) / 2 }
+    : { x: midShoulder.x, y: midShoulder.y + shoulderWidth * 1.6 }
+
+  const torsoHeight = Math.max(Math.abs(midShoulder.y - midHip.y), shoulderWidth * 0.8, 0.001)
+
+  const spineAngleDeg = hipsReliable
+    ? (Math.atan2(midShoulder.x - midHip.x, midHip.y - midShoulder.y) * 180) / Math.PI
+    : 0
 
   const shoulderDiffNorm = (lS.y - rS.y) / shoulderWidth
   const headTiltNorm = (lEar.y - rEar.y) / shoulderWidth
@@ -44,7 +51,7 @@ export function computeMetrics(landmarks: NormalizedLandmark[]): PostureMetrics 
   const elevatedShoulder =
     Math.abs(shoulderDiffNorm) < 0.04 ? 'none' : shoulderDiffNorm > 0 ? 'left' : 'right'
 
-  const leanNorm = (midShoulder.x - midHip.x) / shoulderWidth
+  const leanNorm = hipsReliable ? (midShoulder.x - midHip.x) / shoulderWidth : 0
   const leanDirection =
     Math.abs(leanNorm) < 0.05 ? 'none' : leanNorm > 0 ? 'right' : 'left'
 

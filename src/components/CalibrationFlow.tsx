@@ -43,9 +43,10 @@ export function CalibrationFlow({
   const [error, setError] = useState<string | null>(null)
 
   const visibilityOk = useMemo(() => {
-    if (!landmarks || landmarks.length < 25) return false
-    const pts = [0, 7, 8, 11, 12, 23, 24]
-    return pts.every((i) => (landmarks[i]?.visibility ?? 1) > 0.5)
+    if (!landmarks || landmarks.length < 13) return false
+    // Desk webcams usually frame head + shoulders only — hips are not required.
+    const pts = [0, 7, 8, 11, 12]
+    return pts.every((i) => (landmarks[i]?.visibility ?? 1) > 0.45)
   }, [landmarks])
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export function CalibrationFlow({
     if (countdown <= 0) {
       setCountdown(null)
       if (!landmarks || !personDetected) {
-        setError('Stay fully visible in frame, then try again.')
+        setError('Keep your head and shoulders in frame, then try again.')
         return
       }
       const baseline = captureBaseline(landmarks)
@@ -85,7 +86,7 @@ export function CalibrationFlow({
       return
     }
     if (!personDetected || !visibilityOk) {
-      setError('Center yourself so head, shoulders, and hips are visible.')
+      setError('Center your head and shoulders in the frame. Hips don’t need to be visible.')
       return
     }
     setCountdown(3)
@@ -103,9 +104,9 @@ export function CalibrationFlow({
               mannequin. Your video stays on this device.
             </p>
             <ul className="calib__list">
-              <li>Place the camera at eye level when possible</li>
-              <li>Keep head, shoulders, and hips in frame</li>
-              <li>Sit or stand as you normally work</li>
+              <li>Place the camera near eye level when possible</li>
+              <li>Keep your head and shoulders clearly in frame</li>
+              <li>Sit or stand as you normally work — hips aren’t required</li>
             </ul>
             <div className="calib__actions">
               <button type="button" className="btn btn--primary" onClick={() => setStep('mode')}>
@@ -226,7 +227,7 @@ function StatusLine({
 }) {
   let text = 'Enable camera to begin'
   if (cameraReady && !personDetected) text = 'No person detected — step into frame'
-  else if (cameraReady && !visibilityOk) text = 'Move back so shoulders and hips are visible'
+  else if (cameraReady && !visibilityOk) text = 'Move so your head and both shoulders are clearly visible'
   else if (cameraReady) text = countdown != null ? 'Hold still…' : 'Looking good — ready to capture'
   return <p className="calib__status">{text}</p>
 }
