@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  clearSessionHistory,
+  loadSessionHistory,
+  saveSessionHistoryEntry,
+  type SessionHistoryEntry,
+} from '../lib/sessionHistory'
 import { BODY_PARTS, formatElapsed, recommendationsFor } from '../lib/posture'
 import type {
   BodyPartState,
@@ -11,9 +17,11 @@ interface UseSessionTrackerResult {
   stats: SessionStats
   bodyParts: BodyPartState[]
   exercises: ExerciseRecommendation[]
+  history: SessionHistoryEntry[]
   toastMessage: string | null
   badgeLabel: string
   badgeTone: 'idle' | 'good' | 'fair' | 'poor'
+  clearHistory: () => void
 }
 
 const ALERT_COOLDOWN_MS = 9000
@@ -28,11 +36,16 @@ export function useSessionTracker(
   const totalChecksRef = useRef(0)
   const goodChecksRef = useRef(0)
   const alertCountRef = useRef(0)
+  const scoreSumRef = useRef(0)
+  const scoreSamplesRef = useRef(0)
+  const savedRef = useRef(false)
+  const liveStartedRef = useRef(false)
 
   const [elapsedLabel, setElapsedLabel] = useState('0:00')
   const [alertCount, setAlertCount] = useState(0)
   const [goodPercent, setGoodPercent] = useState<number | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [history, setHistory] = useState<SessionHistoryEntry[]>(() => loadSessionHistory())
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -42,11 +55,19 @@ export function useSessionTracker(
   }, [])
 
   useEffect(() => {
+    if (isLive) liveStartedRef.current = true
+  }, [isLive])
+
+  useEffect(() => {
     if (!isLive || !analysis) return
 
     totalChecksRef.current += 1
     if (personDetected && analysis.status === 'Good') {
       goodChecksRef.current += 1
+    }
+    if (personDetected) {
+      scoreSumRef.current += analysis.score
+      scoreSamplesRef.current += 1
     }
 
     const pct =
@@ -72,6 +93,44 @@ export function useSessionTracker(
     const id = window.setTimeout(() => setToastMessage(null), 5000)
     return () => window.clearTimeout(id)
   }, [toastMessage])
+
+  useEffect(() => {
+    const persist = () => {
+      if (savedRef.current || !liveStartedRef.current) return
+      savedRef.current = true
+
+      const durationMs = Date.now() - sessionStartRef.current
+      const pct =
+        totalChecksRef.current > 0
+          ? Math.round((goodChecksRef.current / totalChecksRef.current) * 100)
+          : 0
+      const averageScore =
+        scoreSamplesRef.current > 0
+          ? Math.round(scoreSumRef.current / scoreSamplesRef.current)
+          : null
+
+      const next = saveSessionHistoryEntry({
+        durationMs,
+        goodPercent: pct,
+        alertCount: alertCountRef.current,
+        averageScore,
+      })
+      setHistory(next)
+    }
+
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') persist()
+    }
+
+    window.addEventListener('pagehide', persist)
+    document.addEventListener('visibilitychange', onHide)
+
+    return () => {
+      window.removeEventListener('pagehide', persist)
+      document.removeEventListener('visibilitychange', onHide)
+      persist()
+    }
+  }, [])
 
   const bodyParts: BodyPartState[] = useMemo(() => {
     return (Object.keys(BODY_PARTS) as Array<keyof typeof BODY_PARTS>).map((key) => {
@@ -114,8 +173,13 @@ export function useSessionTracker(
     },
     bodyParts,
     exercises,
+    history,
     toastMessage,
     badgeLabel,
     badgeTone,
+    clearHistory: () => {
+      clearSessionHistory()
+      setHistory([])
+    },
   }
 }

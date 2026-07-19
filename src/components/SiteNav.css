@@ -83,7 +83,12 @@
   }
 }
 
-@media (max-width: 600px) {
+.site-nav--page {
+  position: relative;
+  background: transparent;
+}
+
+@media (max-width: 720px) {
   .site-nav__links a:not(.site-nav__cta) {
     display: none;
   }

@@ -18,6 +18,9 @@ export function Header({ variant = 'coach', badgeLabel, badgeTone }: HeaderProps
         <Link to="/" className="app-header__home">
           Home
         </Link>
+        <Link to="/privacy" className="app-header__home">
+          Privacy
+        </Link>
         <div
           className={`status-badge${badgeTone === 'idle' ? '' : ` ${badgeTone}`}`}
           role="status"
