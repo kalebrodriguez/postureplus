@@ -9,7 +9,7 @@ import type {
 } from '../types/posture'
 import './CalibrationFlow.css'
 
-type Step = 'intro' | 'mode' | 'habitual' | 'best' | 'confirm'
+type Step = 'intro' | 'mode' | 'habitual' | 'best'
 
 interface CalibrationFlowProps {
   landmarks: NormalizedLandmark[] | null
@@ -27,6 +27,27 @@ const GOALS: { id: SessionGoal; label: string }[] = [
   { id: 'standing-desk', label: 'Standing desk' },
 ]
 
+/** Desk-webcam friendly: only need a face + both shoulders in frame. */
+function hasUpperBodyFrame(landmarks: NormalizedLandmark[] | null): boolean {
+  if (!landmarks || landmarks.length < 13) return false
+  const nose = landmarks[0]
+  const lS = landmarks[11]
+  const rS = landmarks[12]
+  if (!nose || !lS || !rS) return false
+
+  const inFrame = (p: NormalizedLandmark) =>
+    p.x > 0.02 && p.x < 0.98 && p.y > 0.02 && p.y < 0.98
+
+  if (!inFrame(nose) || !inFrame(lS) || !inFrame(rS)) return false
+
+  // Shoulders should be separated and roughly level with/below the face
+  const shoulderSpan = Math.abs(lS.x - rS.x)
+  if (shoulderSpan < 0.08) return false
+  if (lS.y < nose.y - 0.02 || rS.y < nose.y - 0.02) return false
+
+  return true
+}
+
 export function CalibrationFlow({
   landmarks,
   personDetected,
@@ -41,28 +62,37 @@ export function CalibrationFlow({
   const [habitual, setHabitual] = useState<ReturnType<typeof captureBaseline> | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [forceCapture, setForceCapture] = useState(false)
 
-  const visibilityOk = useMemo(() => {
-    if (!landmarks || landmarks.length < 13) return false
-    // Desk webcams usually frame head + shoulders only — hips are not required.
-    const pts = [0, 7, 8, 11, 12]
-    return pts.every((i) => (landmarks[i]?.visibility ?? 1) > 0.45)
-  }, [landmarks])
+  const frameOk = useMemo(
+    () => personDetected && hasUpperBodyFrame(landmarks),
+    [landmarks, personDetected],
+  )
+
+  // Start the camera as soon as calibration opens so framing feedback is live
+  useEffect(() => {
+    if (!cameraReady) onRequestCamera()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (countdown == null) return
     if (countdown <= 0) {
       setCountdown(null)
-      if (!landmarks || !personDetected) {
-        setError('Keep your head and shoulders in frame, then try again.')
+      const canUse =
+        landmarks != null && (forceCapture || hasUpperBodyFrame(landmarks))
+      if (!canUse || !landmarks) {
+        setError('Couldn’t lock a clear head-and-shoulders view. Try Capture anyway.')
+        setForceCapture(false)
         return
       }
       const baseline = captureBaseline(landmarks)
+      setForceCapture(false)
       if (step === 'habitual') {
         setHabitual(baseline)
+        setError(null)
         setStep('best')
       } else if (step === 'best') {
-        // Prefer "best" posture as coaching baseline
         const profile: CalibrationProfile = {
           workMode,
           goal,
@@ -77,18 +107,24 @@ export function CalibrationFlow({
     }
     const id = window.setTimeout(() => setCountdown((c) => (c == null ? c : c - 1)), 1000)
     return () => window.clearTimeout(id)
-  }, [countdown, landmarks, personDetected, step, workMode, goal, onComplete])
+  }, [countdown, landmarks, step, workMode, goal, onComplete, forceCapture])
 
-  const startCapture = () => {
+  const beginCapture = (force = false) => {
     setError(null)
     if (!cameraReady) {
       onRequestCamera()
+      setError('Starting camera… click again in a moment.')
       return
     }
-    if (!personDetected || !visibilityOk) {
-      setError('Center your head and shoulders in the frame. Hips don’t need to be visible.')
+    if (!force && !frameOk) {
+      setError('Move closer so your face and both shoulders are in view.')
       return
     }
+    if (!landmarks) {
+      setError('Wait until you appear on camera, then try again.')
+      return
+    }
+    setForceCapture(force)
     setCountdown(3)
   }
 
@@ -101,15 +137,22 @@ export function CalibrationFlow({
             <h2>Learn your baseline in 15 seconds</h2>
             <p>
               Posture+ compares you to <em>your</em> comfortable alignment — not a generic
-              mannequin. Your video stays on this device.
+              mannequin. A normal laptop webcam framing is enough.
             </p>
             <ul className="calib__list">
-              <li>Place the camera near eye level when possible</li>
-              <li>Keep your head and shoulders clearly in frame</li>
-              <li>Sit or stand as you normally work — hips aren’t required</li>
+              <li>Camera near eye level when possible</li>
+              <li>Face and both shoulders in view</li>
+              <li>Sit or stand how you normally work</li>
             </ul>
             <div className="calib__actions">
-              <button type="button" className="btn btn--primary" onClick={() => setStep('mode')}>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => {
+                  if (!cameraReady) onRequestCamera()
+                  setStep('mode')
+                }}
+              >
                 Start setup
               </button>
               <button type="button" className="btn btn--ghost" onClick={onSkip}>
@@ -172,16 +215,24 @@ export function CalibrationFlow({
             <p className="calib__eyebrow">Step 1 of 2</p>
             <h2>Hold your normal working posture</h2>
             <p>Don’t “fix” it — sit or stand the way you usually do at your desk.</p>
-            <StatusLine
-              cameraReady={cameraReady}
-              personDetected={personDetected}
-              visibilityOk={visibilityOk}
-              countdown={countdown}
-            />
+            <StatusLine cameraReady={cameraReady} frameOk={frameOk} countdown={countdown} />
             {error ? <p className="calib__error">{error}</p> : null}
             <div className="calib__actions">
-              <button type="button" className="btn btn--primary" onClick={startCapture} disabled={countdown != null}>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => beginCapture(false)}
+                disabled={countdown != null}
+              >
                 {countdown != null ? `Capturing in ${countdown}` : 'Capture normal posture'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => beginCapture(true)}
+                disabled={countdown != null || !landmarks}
+              >
+                Capture anyway
               </button>
             </div>
           </>
@@ -195,16 +246,24 @@ export function CalibrationFlow({
               Lengthen through the spine, soften the ribs, level the shoulders. This becomes
               your personal target{habitual ? ' (we already saved your habitual baseline).' : '.'}
             </p>
-            <StatusLine
-              cameraReady={cameraReady}
-              personDetected={personDetected}
-              visibilityOk={visibilityOk}
-              countdown={countdown}
-            />
+            <StatusLine cameraReady={cameraReady} frameOk={frameOk} countdown={countdown} />
             {error ? <p className="calib__error">{error}</p> : null}
             <div className="calib__actions">
-              <button type="button" className="btn btn--primary" onClick={startCapture} disabled={countdown != null}>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => beginCapture(false)}
+                disabled={countdown != null}
+              >
                 {countdown != null ? `Capturing in ${countdown}` : 'Save best posture'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => beginCapture(true)}
+                disabled={countdown != null || !landmarks}
+              >
+                Capture anyway
               </button>
             </div>
           </>
@@ -216,18 +275,18 @@ export function CalibrationFlow({
 
 function StatusLine({
   cameraReady,
-  personDetected,
-  visibilityOk,
+  frameOk,
   countdown,
 }: {
   cameraReady: boolean
-  personDetected: boolean
-  visibilityOk: boolean
+  frameOk: boolean
   countdown: number | null
 }) {
-  let text = 'Enable camera to begin'
-  if (cameraReady && !personDetected) text = 'No person detected — step into frame'
-  else if (cameraReady && !visibilityOk) text = 'Move so your head and both shoulders are clearly visible'
-  else if (cameraReady) text = countdown != null ? 'Hold still…' : 'Looking good — ready to capture'
+  let text = 'Starting camera…'
+  if (cameraReady && !frameOk) {
+    text = 'Show your face and both shoulders — a typical laptop selfie framing is fine'
+  } else if (cameraReady) {
+    text = countdown != null ? 'Hold still…' : 'Looking good — ready to capture'
+  }
   return <p className="calib__status">{text}</p>
 }
