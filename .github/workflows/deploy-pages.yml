@@ -6,20 +6,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -41,24 +39,13 @@ jobs:
           GITHUB_PAGES: 'true'
         run: npm run build
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      # Publishes dist/ to the gh-pages branch (legacy "Deploy from a branch" Pages).
+      # Settings → Pages → Branch: gh-pages / (root)
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          # Auto-enable Pages (Actions source) if it isn't configured yet
-          enablement: true
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          folder: dist
+          branch: gh-pages
+          clean: true
+          # SPA fallback so /coach works on refresh under project Pages
+          single-page-application: true

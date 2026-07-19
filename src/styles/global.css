@@ -11,9 +11,11 @@
   --text: #e8eaf0;
   --muted: #64748b;
   --muted2: #4a5568;
+  --font-display: 'Syne', 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-body: 'Figtree', 'Avenir Next', 'Segoe UI', sans-serif;
   color: var(--text);
   background: var(--bg);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -26,6 +28,10 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
@@ -47,6 +53,11 @@ body {
   flex-direction: column;
 }
 
+.coach-shell {
+  height: 100%;
+  max-height: 100svh;
+}
+
 .main {
   flex: 1;
   display: grid;
@@ -62,5 +73,16 @@ button {
   .main {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
+  }
+
+  .coach-shell {
+    max-height: none;
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

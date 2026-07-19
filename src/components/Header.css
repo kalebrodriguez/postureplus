@@ -13,9 +13,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--font-display);
   font-size: 17px;
   font-weight: 700;
   color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
 }
 
 .logo span {
@@ -27,6 +30,23 @@
   height: 8px;
   border-radius: 50%;
   background: var(--blue);
+}
+
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-header__home {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.app-header__home:hover {
+  color: var(--text);
 }
 
 .status-badge {

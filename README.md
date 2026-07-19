@@ -18,18 +18,26 @@ Real-time AI posture coach built with **React**, **TypeScript**, **Vite**, and *
 | UI | React 19 + TypeScript |
 | Bundler | Vite 8 |
 | Pose ML | `@mediapipe/tasks-vision` |
-| Hosting | GitHub Pages (Actions) |
+| Hosting | GitHub Pages (`gh-pages` branch) |
 
 ## Project structure
 
 ```
 src/
-  components/     # Header, camera panel, side panel, toast
+  pages/          # Landing + coach routes
+  components/     # UI (nav, camera, panels, landing visual)
   hooks/          # Camera + session state
   lib/            # Posture math + MediaPipe engine
   styles/         # Global design tokens
   types/          # Shared TypeScript types
 ```
+
+## Routes
+
+| Path | Page |
+| --- | --- |
+| `/` | Marketing landing |
+| `/coach` | Live posture coach |
 
 ## Scripts
 
@@ -46,13 +54,12 @@ Camera access needs a secure context (`localhost` or HTTPS).
 
 ## Deploy on GitHub Pages
 
-Pushes to `main` run lint, tests, and build, then deploy `dist/`.
+Pushes to `main` build the app and publish `dist/` to the `gh-pages` branch.
 
-The deploy workflow tries to enable Pages automatically. If the site is still
-missing after a green deploy, do this once:
+**Pages settings (one-time):**
 
-1. **Settings → Pages**
-2. Set **Source** to **GitHub Actions**
-3. Re-run the **Deploy to GitHub Pages** workflow
+1. Open https://github.com/kalebrodriguez/postureplus/settings/pages
+2. **Build and deployment → Source:** Deploy from a branch
+3. **Branch:** `gh-pages` / `/ (root)` → Save
 
-The app is built with `base: /postureplus/` so assets resolve correctly under the repo Pages URL.
+Do **not** point Pages at `main` or a feature branch — those contain Vite source, not a production build (that caused the blank page).
