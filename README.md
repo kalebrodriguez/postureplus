@@ -1,65 +1,40 @@
 # Posture+
 
-Real-time AI posture coach built with **React**, **TypeScript**, **Vite**, and **MediaPipe Pose**.
+Personal posture-improvement system built with **React**, **TypeScript**, **Vite**, and **MediaPipe Pose**.
 
 **Live site:** [https://kalebrodriguez.github.io/postureplus/](https://kalebrodriguez.github.io/postureplus/)
 
+> Posture+ doesn’t just tell you that you’re slouching. It learns your posture, catches gradual fatigue, and coaches you toward lasting improvement.
+
 ## Features
 
-- Webcam pose tracking with live skeleton overlay
-- Posture score across spine, shoulders, head, and neck
-- Alerts when form slips, plus recommended stretches
-- Runs fully in the browser — video never leaves your device
-
-## Stack
-
-| Layer | Tech |
-| --- | --- |
-| UI | React 19 + TypeScript |
-| Bundler | Vite 8 |
-| Pose ML | `@mediapipe/tasks-vision` |
-| Hosting | GitHub Pages (`gh-pages` branch) |
-
-## Project structure
-
-```
-src/
-  pages/          # Landing + coach routes
-  components/     # UI (nav, camera, panels, landing visual)
-  hooks/          # Camera + session state
-  lib/            # Posture math + MediaPipe engine
-  styles/         # Global design tokens
-  types/          # Shared TypeScript types
-```
+- Personal calibration (habitual + best posture baseline)
+- Sustained-posture detection with adjustable alert delay
+- Specific corrective cues + overlay highlights
+- Session summary (score, streaks, top issue, correction time)
+- Local progress dashboard (weekly insights, streaks)
+- Smart break / fatigue hints by session goal
+- Guided exercise mini-sessions
+- Private by design — video never leaves the device
 
 ## Routes
 
 | Path | Page |
 | --- | --- |
-| `/` | Marketing landing |
-| `/coach` | Live posture coach |
+| `/` | Landing |
+| `/coach` | Calibration + live coach |
+| `/progress` | Local progress history |
 
 ## Scripts
 
 ```bash
 npm install
-npm run dev       # local dev server (http://localhost:5173)
-npm run build     # production build → dist/
-npm run preview   # preview production build
-npm test          # unit tests
-npm run lint      # oxlint
+npm run dev
+npm run build
+npm test
+npm run lint
 ```
 
-Camera access needs a secure context (`localhost` or HTTPS).
+## Deploy
 
-## Deploy on GitHub Pages
-
-Pushes to `main` build the app and publish `dist/` to the `gh-pages` branch.
-
-**Pages settings (one-time):**
-
-1. Open https://github.com/kalebrodriguez/postureplus/settings/pages
-2. **Build and deployment → Source:** Deploy from a branch
-3. **Branch:** `gh-pages` / `/ (root)` → Save
-
-Do **not** point Pages at `main` or a feature branch — those contain Vite source, not a production build (that caused the blank page).
+Pushes to `main` publish `dist/` to `gh-pages`. Set Pages source to the `gh-pages` branch.

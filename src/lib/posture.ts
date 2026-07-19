@@ -1,31 +1,45 @@
 import type {
   BodyPartKey,
   ExerciseRecommendation,
-  NormalizedLandmark,
   PostureAnalysis,
   PostureIssue,
+  PosturePhase,
+  SessionGoal,
 } from '../types/posture'
 
-export const EXERCISES: Record<PostureIssue, Omit<ExerciseRecommendation, 'issue'>> = {
+export { analyzePosture, emptyAnalysis, captureBaseline, computeMetrics, buildCues } from './metrics'
+
+export const EXERCISES: Record<
+  PostureIssue,
+  Omit<ExerciseRecommendation, 'issue'>
+> = {
   Slouching: {
     name: 'Chest Opener',
     description:
-      'Stand, clasp hands behind back, squeeze shoulder blades and lift chest. Hold 15s. Repeat 3×.',
+      'Stand or sit tall, clasp hands behind back, squeeze shoulder blades and lift chest.',
+    holdSeconds: 15,
+    reps: 3,
   },
   'Uneven shoulders': {
     name: 'Shoulder Rolls',
     description:
-      'Roll both shoulders backward in slow circles 10×, then shrug to ears, hold 3s, release. Repeat 5×.',
+      'Roll both shoulders backward in slow circles, then shrug to ears, hold, and release.',
+    holdSeconds: 3,
+    reps: 10,
   },
   'Head drooping forward': {
     name: 'Chin Tuck',
     description:
-      'Pull chin straight back (double chin). Hold 5s, release. Do 10 reps — great for screen workers.',
+      'Pull chin straight back (gentle double chin). Hold, release, and repeat.',
+    holdSeconds: 5,
+    reps: 10,
   },
   'Head tilting': {
     name: 'Neck Side Stretch',
     description:
-      'Tilt right ear toward right shoulder, hold 20s. Switch sides. Keep shoulders relaxed.',
+      'Tilt one ear toward the same-side shoulder. Keep shoulders relaxed, then switch.',
+    holdSeconds: 20,
+    reps: 2,
   },
 }
 
@@ -60,39 +74,6 @@ export const BODY_PARTS: Record<
 const SCORE_RING_RADIUS = 32
 export const SCORE_RING_CIRCUMFERENCE = 2 * Math.PI * SCORE_RING_RADIUS
 
-export function analyzePosture(landmarks: NormalizedLandmark[]): PostureAnalysis {
-  const issues: PostureIssue[] = []
-
-  const lEar = landmarks[7]
-  const rEar = landmarks[8]
-  const lS = landmarks[11]
-  const rS = landmarks[12]
-  const lH = landmarks[23]
-  const rH = landmarks[24]
-
-  const midS = { x: (lS.x + rS.x) / 2, y: (lS.y + rS.y) / 2 }
-  const midH = { x: (lH.x + rH.x) / 2, y: (lH.y + rH.y) / 2 }
-  const midE = { x: (lEar.x + rEar.x) / 2, y: (lEar.y + rEar.y) / 2 }
-
-  const shoulderWidth = Math.max(Math.abs(lS.x - rS.x), 0.001)
-  const torsoHeight = Math.max(Math.abs(midS.y - midH.y), 0.001)
-
-  const spineAngle =
-    (Math.atan2(midS.x - midH.x, midH.y - midS.y) * 180) / Math.PI
-
-  if (Math.abs(spineAngle) > 12) issues.push('Slouching')
-  if (Math.abs(lS.y - rS.y) / shoulderWidth > 0.12) issues.push('Uneven shoulders')
-  if (Math.abs(lEar.y - rEar.y) / shoulderWidth > 0.12) issues.push('Head tilting')
-
-  const neckDroop = (midE.y - midS.y) / torsoHeight
-  if (neckDroop > -0.22) issues.push('Head drooping forward')
-
-  const score = Math.max(0, 100 - issues.length * 22)
-  const status = issues.length === 0 ? 'Good' : issues.length === 1 ? 'Fair' : 'Poor'
-
-  return { issues, score, status }
-}
-
 export function scoreColor(score: number): string {
   if (score >= 78) return 'var(--green)'
   if (score >= 50) return 'var(--amber)'
@@ -105,11 +86,30 @@ export function skeletonColor(status: PostureAnalysis['status']): string {
   return 'rgba(239,68,68,0.75)'
 }
 
+export function phaseLabel(phase: PosturePhase): string {
+  switch (phase) {
+    case 'good':
+      return 'Good'
+    case 'slight':
+      return 'Slight deviation'
+    case 'sustained':
+      return 'Sustained poor posture'
+    case 'correcting':
+      return 'Correcting'
+    case 'recovered':
+      return 'Recovered'
+    default:
+      return 'Waiting'
+  }
+}
+
 export function recommendationsFor(issues: PostureIssue[]): ExerciseRecommendation[] {
   return issues.map((issue) => ({
     issue,
     name: EXERCISES[issue].name,
     description: EXERCISES[issue].description,
+    holdSeconds: EXERCISES[issue].holdSeconds,
+    reps: EXERCISES[issue].reps,
   }))
 }
 
@@ -118,4 +118,17 @@ export function formatElapsed(ms: number): string {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = String(totalSeconds % 60).padStart(2, '0')
   return `${minutes}:${seconds}`
+}
+
+export function goalBreakMinutes(goal: SessionGoal): number {
+  switch (goal) {
+    case 'gaming':
+      return 40
+    case 'studying':
+      return 30
+    case 'standing-desk':
+      return 35
+    default:
+      return 25
+  }
 }

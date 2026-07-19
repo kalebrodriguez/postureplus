@@ -1,48 +1,41 @@
 import './SidePanel.css'
-import { SCORE_RING_CIRCUMFERENCE, scoreColor } from '../lib/posture'
+import { SCORE_RING_CIRCUMFERENCE, phaseLabel, scoreColor } from '../lib/posture'
 import type {
   BodyPartState,
+  CoachingCue,
   ExerciseRecommendation,
   PostureAnalysis,
+  PostureIssue,
+  PosturePhase,
 } from '../types/posture'
 
 interface SidePanelProps {
   analysis: PostureAnalysis | null
   personDetected: boolean
   isLive: boolean
+  phase: PosturePhase
+  activeCue: CoachingCue | null
   bodyParts: BodyPartState[]
   exercises: ExerciseRecommendation[]
+  onStartExercise: (issue: PostureIssue) => void
 }
 
 export function SidePanel({
   analysis,
   personDetected,
   isLive,
+  phase,
+  activeCue,
   bodyParts,
   exercises,
+  onStartExercise,
 }: SidePanelProps) {
   const detected = isLive && personDetected && analysis != null
   const score = detected ? analysis.score : null
-  const status = detected ? analysis.status : null
   const offset =
     score == null
       ? SCORE_RING_CIRCUMFERENCE
       : SCORE_RING_CIRCUMFERENCE - (score / 100) * SCORE_RING_CIRCUMFERENCE
-
-  let statusLabel = 'Waiting'
-  let statusClass = 'none'
-  let statusSub = isLive
-    ? 'Position yourself in the camera frame.'
-    : 'Enable camera to begin.'
-
-  if (detected && status) {
-    statusLabel = status
-    statusClass = status.toLowerCase()
-    statusSub =
-      analysis.issues.length === 0
-        ? 'Great posture — keep it up!'
-        : `${analysis.issues.length} issue${analysis.issues.length > 1 ? 's' : ''} detected.`
-  }
 
   return (
     <aside className="panel">
@@ -68,8 +61,16 @@ export function SidePanel({
             <div className="score-num">{score ?? '—'}</div>
           </div>
           <div className="score-info">
-            <div className={`score-label ${statusClass}`}>{statusLabel}</div>
-            <div className="score-sub">{statusSub}</div>
+            <div className={`score-label ${detected ? analysis.status.toLowerCase() : 'none'}`}>
+              {detected ? phaseLabel(phase) : 'Waiting'}
+            </div>
+            <div className="score-sub">
+              {!detected
+                ? 'Enable camera and complete calibration to begin.'
+                : activeCue
+                  ? activeCue.action
+                  : 'Great posture — keep it up!'}
+            </div>
           </div>
         </div>
       </div>
@@ -99,9 +100,7 @@ export function SidePanel({
             <div className="good-check">✓</div>
             <div className="good-title">Looking good</div>
             <div className="good-sub">
-              {isLive
-                ? 'No corrections needed right now.'
-                : 'Enable camera to start analysis.'}
+              {isLive ? 'No corrections needed right now.' : 'Start a session to get drills.'}
             </div>
           </div>
         ) : (
@@ -111,6 +110,13 @@ export function SidePanel({
                 <div className="fix-issue">{ex.issue}</div>
                 <div className="fix-name">{ex.name}</div>
                 <div className="fix-desc">{ex.description}</div>
+                <button
+                  type="button"
+                  className="fix-start"
+                  onClick={() => onStartExercise(ex.issue)}
+                >
+                  Start guided · {ex.reps} reps
+                </button>
               </div>
             ))}
           </div>

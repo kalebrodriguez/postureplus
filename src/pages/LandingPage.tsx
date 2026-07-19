@@ -17,44 +17,72 @@ export function LandingPage() {
           <p className="landing-hero__brand" id="landing-brand">
             Posture<span>+</span>
           </p>
-          <h1 className="landing-hero__headline">Sit better. Stand taller.</h1>
+          <h1 className="landing-hero__headline">
+            Learn your posture. Catch fatigue. Improve for good.
+          </h1>
           <p className="landing-hero__lede">
-            Real-time AI coaching that watches your posture and nudges you the
-            moment it slips.
+            Posture+ doesn’t just tell you that you’re slouching — it calibrates to you,
+            waits for sustained problems, and coaches lasting improvement.
           </p>
           <div className="landing-hero__actions">
             <Link className="btn btn--primary" to="/coach">
               Open coach
             </Link>
-            <a className="btn btn--ghost" href="#how">
-              How it works
-            </a>
+            <Link className="btn btn--ghost" to="/progress">
+              View progress
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="landing-how" id="how" aria-labelledby="how-title">
-        <p className="landing-how__eyebrow">How it works</p>
-        <h2 className="landing-how__title" id="how-title">
-          Three steps. No accounts. No uploads.
+      <section className="landing-how" id="difference" aria-labelledby="diff-title">
+        <p className="landing-how__eyebrow">Why Posture+</p>
+        <h2 className="landing-how__title" id="diff-title">
+          A personal posture-improvement system
         </h2>
         <p className="landing-how__lede">
-          Everything runs in your browser — your camera feed never leaves your
-          device.
+          Built to answer three questions: what am I doing wrong, how do I correct it,
+          and am I improving over time — privately, in your browser.
         </p>
 
         <ol className="landing-how__steps">
           <li>
             <span className="landing-how__step-num">01</span>
-            <span className="landing-how__step-label">Enable your webcam</span>
+            <span className="landing-how__step-label">Calibrate to your body and desk</span>
           </li>
           <li>
             <span className="landing-how__step-num">02</span>
-            <span className="landing-how__step-label">Get a live posture score</span>
+            <span className="landing-how__step-label">Get specific cues, not vague scores</span>
           </li>
           <li>
             <span className="landing-how__step-num">03</span>
-            <span className="landing-how__step-label">Fix issues with short drills</span>
+            <span className="landing-how__step-label">Track sessions and fatigue patterns</span>
+          </li>
+        </ol>
+      </section>
+
+      <section className="landing-how" id="how" aria-labelledby="how-title">
+        <p className="landing-how__eyebrow">How it works</p>
+        <h2 className="landing-how__title" id="how-title">
+          Calibrate. Coach. Summarize.
+        </h2>
+        <p className="landing-how__lede">
+          Sustained-posture detection avoids nagging on every fidget. Alerts wait until a
+          problem sticks — then show exactly what to fix.
+        </p>
+
+        <ol className="landing-how__steps">
+          <li>
+            <span className="landing-how__step-num">01</span>
+            <span className="landing-how__step-label">15-second personal calibration</span>
+          </li>
+          <li>
+            <span className="landing-how__step-num">02</span>
+            <span className="landing-how__step-label">Live cues + guided exercises</span>
+          </li>
+          <li>
+            <span className="landing-how__step-num">03</span>
+            <span className="landing-how__step-label">Session summary & local progress</span>
           </li>
         </ol>
 
@@ -67,7 +95,7 @@ export function LandingPage() {
         <span className="landing-footer__brand">
           Posture<span>+</span>
         </span>
-        <span className="landing-footer__note">Private by design · Runs locally</span>
+        <span className="landing-footer__note">Private by design · Runs locally · No uploads</span>
       </footer>
     </div>
   )

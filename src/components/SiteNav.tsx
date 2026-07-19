@@ -9,7 +9,8 @@ export function SiteNav() {
         Posture<span>+</span>
       </Link>
       <nav className="site-nav__links" aria-label="Primary">
-        <a href="#how">How it works</a>
+        <Link to={{ pathname: '/', hash: 'difference' }}>Why Posture+</Link>
+        <NavLink to="/progress">Progress</NavLink>
         <NavLink to="/coach" className="site-nav__cta">
           Open coach
         </NavLink>
