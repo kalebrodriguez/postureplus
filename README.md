@@ -24,12 +24,20 @@ Real-time AI posture coach built with **React**, **TypeScript**, **Vite**, and *
 
 ```
 src/
-  components/     # Header, camera panel, side panel, toast
+  pages/          # Landing + coach routes
+  components/     # UI (nav, camera, panels, landing visual)
   hooks/          # Camera + session state
   lib/            # Posture math + MediaPipe engine
   styles/         # Global design tokens
   types/          # Shared TypeScript types
 ```
+
+## Routes
+
+| Path | Page |
+| --- | --- |
+| `/` | Marketing landing |
+| `/coach` | Live posture coach |
 
 ## Scripts
 

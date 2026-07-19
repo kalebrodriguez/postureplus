@@ -47,3 +47,5 @@ jobs:
           folder: dist
           branch: gh-pages
           clean: true
+          # SPA fallback so /coach works on refresh under project Pages
+          single-page-application: true
