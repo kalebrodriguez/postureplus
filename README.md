@@ -46,13 +46,15 @@ Camera access needs a secure context (`localhost` or HTTPS).
 
 ## Deploy on GitHub Pages
 
-Pushes to `main` run lint, tests, and build, then deploy `dist/`.
+**Required once (cannot be automated):** GitHub blocks Actions from creating a
+Pages site, so you must flip this switch yourself:
 
-The deploy workflow tries to enable Pages automatically. If the site is still
-missing after a green deploy, do this once:
+1. Open **Settings → Pages**
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**
+3. Merge this repo to `main`, or open **Actions → Deploy to GitHub Pages → Run workflow**
 
-1. **Settings → Pages**
-2. Set **Source** to **GitHub Actions**
-3. Re-run the **Deploy to GitHub Pages** workflow
+After that, every push to `main` runs lint, tests, build, and deploys `dist/`.
 
-The app is built with `base: /postureplus/` so assets resolve correctly under the repo Pages URL.
+Live URL: `https://kalebrodriguez.github.io/postureplus/`
+
+The app is built with `base: /postureplus/` so assets resolve under that path.
